@@ -1,126 +1,190 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from 'Config/Firebase';
 import { AuthenticatedContext } from 'Context/AuthenticatedContext';
-import { Rings } from "react-loader-spinner";
-// import { collection, getDocs,query, where } from "firebase/firestore";
+import { Rings } from 'react-loader-spinner';
+import styled from 'styled-components';
+
+// Define color scheme
+const primaryColor = '#5C6BC0'; // Blue
+const cardHoverColor = '#7E57C2'; // Darker Purple for hover effect
+const textColor = '#ffffff'; // White text
+
+const DashboardContainer = styled.div`
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+`;
+
+const Card = styled.div`
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 400px; /* Limit max width */
+  margin: 10px; /* Add margin for spacing */
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const CardBody = styled.div`
+  padding: 20px;
+  text-align: center;
+`;
+
+const CardTitle = styled.h5`
+  color: ${primaryColor};
+  font-size: 1.5rem;
+
+  @media (max-width: 576px) {
+    font-size: 1.25rem; /* Adjust font size for small screens */
+  }
+`;
+
+const Button = styled(Link)`
+  background-color: ${primaryColor};
+  color: ${textColor};
+  padding: 10px 20px;
+  border-radius: 30px;
+  text-decoration: none;
+  margin: 5px;
+  transition: background-color 0.3s;
+  display: inline-block; /* Ensure buttons are inline-block for proper spacing */
+
+  &:hover {
+    background-color: ${cardHoverColor};
+  }
+`;
+
+const Stats = styled.div`
+  font-size: 2rem;
+  margin-top: 20px;
+  color: ${primaryColor};
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem; /* Adjust font size for small screens */
+  }
+`;
+
+const StatsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+
+  @media (max-width: 576px) {
+    flex-direction: column; /* Stack stats vertically on small screens */
+    align-items: center;
+  }
+`;
+
+const TotalCredits = styled.p`
+  color: #4CAF50; /* Green */
+`;
+
+const TotalDebits = styled.p`
+  color: #F44336; /* Red */
+`;
+
 function Dashboard() {
-  const { user } = useContext(AuthenticatedContext)
-  const [totalAccounts, setTotalAccounts] = useState(0)
-  const [totalTransactions, setTotalTransactions] = useState(0)
-  const [totalCredit, setTotalCredit] = useState(0)
-  const [totalDebit, setTotalDebit] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user } = useContext(AuthenticatedContext);
+  const [totalAccounts, setTotalAccounts] = useState(0);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [totalCredit, setTotalCredit] = useState(0);
+  const [totalDebit, setTotalDebit] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const readDocs = async () => {
+    let arrayAccounts = [];
+    let arrayTransactions = [];
 
-    let arrayAccounts = []
-    let arrayTransactions = []
+    // Fetch Accounts
+    const accountsRef = collection(firestore, 'accounts');
+    const qa = query(accountsRef, where('createdBy.uid', '==', user.uid));
+    const querySnapshotAccounts = await getDocs(qa);
 
-    //accounts
+    // Fetch Transactions
+    const transactionsRef = collection(firestore, 'transactions');
+    const qt = query(transactionsRef, where('createdBy.uid', '==', user.uid));
+    const querySnapshotTransactions = await getDocs(qt);
 
-    const accountsRef = collection(firestore, "accounts");
-    const qa = query(accountsRef, where("createdBy.uid", "==", user.uid));
-    const querySnapshotaccounts = await getDocs(qa);  // Note: Key line for Reading data
-
-    //transactions
-
-    const transactionsRef = collection(firestore, "transactions");
-    const qt = query(transactionsRef, where("createdBy.uid", "==", user.uid));
-    const querySnapshottransactions = await getDocs(qt);  // Note: Key line for Reading data
-
-    querySnapshotaccounts.forEach((doc) => {
-      // console.log(doc.data().userId)
-      arrayAccounts.push(doc.data())   //Also must Note this line
+    querySnapshotAccounts.forEach((doc) => {
+      arrayAccounts.push(doc.data());
     });
+
     let credit = 0;
     let debit = 0;
-    querySnapshottransactions.forEach((doc) => {
-      // console.log("doc", doc.data())
-      // array.push(doc.data())
-      // console.log(doc.data().createdBy.uid)
-      arrayTransactions.push(doc.data())   //Also must Note this line
-      if (doc.data().type === "credit") {
-        credit = credit + parseInt(doc.data().amount)
-        // console.log("credit" ,credit)
+    querySnapshotTransactions.forEach((doc) => {
+      arrayTransactions.push(doc.data());
+      if (doc.data().type === 'credit') {
+        credit += parseInt(doc.data().amount);
       } else {
-        debit = debit + parseInt(doc.data().amount)
-        // console.log("debit" ,debit)
+        debit += parseInt(doc.data().amount);
       }
     });
-    setTotalCredit(credit)
-    setTotalDebit(debit)
 
-    // setDocuments(arrayAccounts)
-    // setIsLoading(false)
-    // console.log(arrayAccounts)
-    // console.log(arrayTransactions)
-    setTotalAccounts(arrayAccounts.length)
-    setTotalTransactions(arrayTransactions.length)
-    setIsLoading(false)
-  }
+    setTotalAccounts(arrayAccounts.length);
+    setTotalTransactions(arrayTransactions.length);
+    setTotalCredit(credit);
+    setTotalDebit(debit);
+    setIsLoading(false);
+  };
 
-  useEffect(() => {     //Note this point carefully also
-    readDocs()
-  }, [])
+  useEffect(() => {
+    readDocs();
+  }, []);
 
   return (
-    <div className='dashboardPage'>
-      <div className='container py-5'>
-        <div class="row">
-          <div class="col-12  col-lg-6 mt-2">
-            <div class="card pb-4">
-              <div class="card-body text-center">
-                <h5 class="card-title"><i class="fa-solid fa-user"></i> Accounts</h5>
+    <DashboardContainer>
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-6">
+            <Card>
+              <CardBody>
+                <CardTitle><i className="fa-solid fa-user"></i> Accounts</CardTitle>
                 <hr />
-                <Link to="/dashboard/createAccounts" className='btn btn-success mt-2 me-2 mb-0 h5' ><i class="fa-solid fa-plus"></i> Add New Account</Link>
-                <Link to="/dashboard/viewAccounts" className='btn btn-info mt-2 me-2 mb-0 h5 text-white'><i class="fa-solid fa-eye"></i> View All Accounts</Link>
+                <Button to="/dashboard/createAccounts"><i className="fa-solid fa-plus"></i> Add New Account</Button>
+                <Button to="/dashboard/viewAccounts"><i className="fa-solid fa-eye"></i> View All Accounts</Button>
                 <hr />
                 {isLoading
-                  ? <div className="row">
-                    <div className="col d-flex justify-content-center ">
-                      <Rings />
-                    </div>
-                  </div>
-                  : <div className='my-4'>
-                    {totalAccounts}
-                  </div>
+                  ? <Rings />
+                  : <Stats>{totalAccounts}</Stats>
                 }
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           </div>
-          <div class="col-12 col-lg-6 mt-2">
-            <div class="card">
-              <div class="card-body text-center">
-                <h5 class="card-title "><i class="fa-solid fa-money-bill-1"></i> Transactions</h5>
+          <div className="col-12 col-md-6">
+            <Card>
+              <CardBody>
+                <CardTitle><i className="fa-solid fa-money-bill-1"></i> Transactions</CardTitle>
                 <hr />
-                <Link to="/dashboard/viewTransactions" className='btn btn-info mt-2 me-2 h5 text-white'><i class="fa-solid fa-eye"></i> View All Transactions</Link>
+                <Button to="/dashboard/viewTransactions"><i className="fa-solid fa-eye"></i> View All Transactions</Button>
                 <hr />
                 {isLoading
-                  ? <div className="row">
-                    <div className="col d-flex justify-content-center ">
-                      <Rings className="w-50"/>
+                  ? <Rings />
+                  : (
+                    <div>
+                      <Stats>{totalTransactions}</Stats>
+                      <StatsContainer>
+                        <TotalCredits>Total Credits: <span>{totalCredit}</span></TotalCredits>
+                        <TotalDebits>Total Debits: <span>{totalDebit}</span></TotalDebits>
+                      </StatsContainer>
                     </div>
-                  </div>
-                  : <div className='my-4'>
-                    {totalTransactions}
-                    {/* <p>Transactions</p> */}
-                    <div className="container-fluid">
-                      <div className="row ">
-                        <div className="col text-start mb-0 " ><p className='TC'> Total Credits Rs:<span className='text-success'>{totalCredit}</span></p></div>
-                        <div className="col text-end mb-0 " ><p className='TD'> Total Debits Rs:<span className='text-danger'>{totalDebit}</span></p></div>
-                      </div>
-                    </div>
-                  </div>
+                  )
                 }
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           </div>
         </div>
       </div>
-    </div>
-  )
+    </DashboardContainer>
+  );
 }
 
-export default Dashboard
+export default Dashboard;

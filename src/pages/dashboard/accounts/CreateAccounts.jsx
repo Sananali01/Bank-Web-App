@@ -1,66 +1,149 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext } from 'react';
 import { firestore } from 'Config/Firebase';
 import { serverTimestamp, setDoc, doc } from "firebase/firestore";
-// import { async } from '@firebase/util';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { AuthenticatedContext } from 'Context/AuthenticatedContext';
-
-
+import styled from 'styled-components';
+import 'font-awesome/css/font-awesome.min.css';
 
 const initialState = {
   fullName: "",
   CNIC: "",
   branchCode: "",
   accountNumber: "",
-  accountType: "",
+  accountType: "Saving", // Default value
   initialDeposit: "",
   date: "",
   time: "",
   userId: "",
   id: "",
   description: "Initial Amount"
-}
-function CreateAccounts() {
+};
 
-  const [isLoading, setIsLoading] = useState(false);
-  const { user} = useContext(AuthenticatedContext);
-  // console.log("user", user)
+const Container = styled.div`
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
 
-  const [state, setState] = useState(initialState);
-  const handleChange = e => {
-    setState(s => ({ ...s, [e.target.name]: e.target.value }))   //what does this line   Confusion!  
-    // console.log(state)
+const Card = styled.div`
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  width: 90%;
+  max-width: 600px;
+`;
+
+const Title = styled.h1`
+  color: #4a148c;
+  font-size: 32px;
+  margin-bottom: 10px;
+  text-align: center;
+`;
+
+const SubTitle = styled.p`
+  font-size: 18px;
+  color: #6a1b9a;
+  margin-bottom: 30px;
+  text-align: center;
+`;
+
+const Button = styled.button`
+  background-color: #4a148c;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s;
+  width: 100%;
+  
+  &:hover {
+    background-color: #6a1b9a;
+    transform: scale(1.05);
   }
-  const Navigate = useNavigate();
 
+  &:disabled {
+    background-color: #d1c4e9;
+    cursor: not-allowed;
+  }
+`;
 
+const InputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+`;
 
+const Label = styled.label`
+  font-weight: bold;
+  color: #4a148c;
+  flex: 1;
+`;
 
-  const handleSubmit = async e => {
+const Input = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #4a148c;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+  flex: 2;
+
+  &:focus {
+    border-color: #6a1b9a;
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #4a148c;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+  flex: 2;
+
+  &:focus {
+    border-color: #6a1b9a;
+    outline: none;
+  }
+`;
+
+const Icon = styled.i`
+  color: #6a1b9a;
+  margin-right: 10px;
+  font-size: 20px;
+`;
+
+const CreateAccounts = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useContext(AuthenticatedContext);
+  const [state, setState] = useState(initialState);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (state.fullName === " ") {
-      toast.error('Your Name feild is empty that is not acceptable.', {
+
+    // Input validation
+    if (state.fullName.trim() === "") {
+      toast.error('Your Name field is empty; that is not acceptable.', {
         position: "bottom-left",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
     if (state.CNIC.length !== 13) {
-      toast.error('CNIC lenght should be 13', {
+      toast.error('CNIC length should be 13.', {
         position: "bottom-left",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
@@ -68,234 +151,129 @@ function CreateAccounts() {
       toast.error('You can use only 99 branches.', {
         position: "bottom-left",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
     if (state.accountNumber.length !== 9) {
-      toast.error('Your Account number length should be 9', {
+      toast.error('Your Account number length should be 9.', {
         position: "bottom-left",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
     if (state.initialDeposit < 500) {
-      toast.error('Your initial Deposit is less than 500 PKR. .', {
+      toast.error('Your initial deposit is less than 500 PKR.', {
         position: "bottom-left",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
 
-
-
-
-
-
+    // Start loading
     setIsLoading(true);
     state.date = dayjs().format('DD/MM/YYYY');
     state.time = dayjs().format('hh:mm:ss A');
     state.userId = user.uid;
     state.id = Math.random().toString(36).slice(2);
-    // console.log(state)
 
-    let accountData = {
+    const accountData = {
       ...state,
       createdBy: {
         email: user.email,
         uid: user.uid
       }
-    }
-
-
-
+    };
 
     try {
-      console.log(accountData)
-      const docRef = await setDoc(doc(firestore, "accounts", state.id), accountData);
-      // await setDoc(doc(firestore, "transactions", transactionData.id), transactionData)
-      // console.log("Document written with ID: ", docRef.id);
-      console.log(accountData)
-      console.log(docRef)
-      toast.success(`Dear ${accountData.fullName} , your Account has been Created against Account # ${accountData.accountNumber}`, {
+      // Create account in Firestore
+      await setDoc(doc(firestore, "accounts", state.id), accountData);
+      // Notify user of success
+      toast.success(`Dear ${accountData.fullName}, your account has been created against Account # ${accountData.accountNumber}`, {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
-      console.log("data added successfuly to dataBase");
-      Navigate("/dashboard/viewAccounts")
-    } catch (e) {
-      console.error("Error adding document: ", e);
-      toast.success(e, {
+
+      // Prepare transaction data
+      const transactionData = {
+        amount: state.initialDeposit,
+        description: state.description,
+        dateCreated: serverTimestamp(),
+        id: Math.random().toString(36).slice(2),
+        accountId: state.id,
+        type: 'credit',
+        fullName: state.fullName,
+        createdBy: {
+          email: user.email,
+          uid: user.uid
+        }
+      };
+
+      // Create transaction in Firestore
+      await setDoc(doc(firestore, "transactions", transactionData.id), transactionData);
+      console.log("Transaction done", transactionData);
+
+      // Navigate to view accounts after successful account creation
+      navigate("/dashboard/viewAccounts");
+
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      toast.error('An error occurred while creating the account.', {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      })
-      // .finally(() => {
-          setIsLoading(false);
-          console.log(isLoading)
-
-        // })
+      });
+    } finally {
+      // Stop loading and reset state
+      setIsLoading(false);
+      setState(initialState);
     }
-    // transaction code
-
-    let { initialDeposit, description } = state
-    let transactionData = {
-      amount: initialDeposit,
-      description,
-      dateCreated: serverTimestamp(),
-      id: Math.random().toString(36).slice(2),
-      accountId: state.id,
-      type: 'credit',
-      fullName: state.fullName,
-      createdBy: {
-        email: user.email,
-        uid: user.uid
-      }
-    }
-    try {
-      await setDoc(doc(firestore, "transactions", transactionData.id), transactionData)
-      console.log("Transaction done", transactionData)
-    } catch (err) {
-      console.error(err)
-    }
-    console.log(state)
-    setState(initialState);
-  }
-
-
-  // const createTransaction = async () => {
-    console.log("account",state)
-
-
-
-  //   // transactionData.dateCreated = serverTimestamp()
-  //   // transactionData.id = Math.random().toString(36).slice(2)
-  //   // transactionData.account=state.accountNumber;
-  //   // transactionData.type='credit';
-  //   // transactionData.createdBy = {
-  //   //   fullName:state.fullName,
-
-  //   // }
-
-
-  // }
-
-
+  };
 
   return (
-    <div className='container createAccount'>
-      <div class="card my-5">
-        <div class="card-body">
-          <div className="container">
-            <div className="row bg-primary ">
-              <div className='col text-center'>
-                <h1 className='text-white'>Enter Account Details Below</h1>
-                <p className='fs-6'>All fields are required*</p>
-              </div>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div className="row mt-2 ">
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-user"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="floatingInput" name="fullName" value={state.fullName} placeholder="name" onChange={handleChange} required />
-                    <label for="floatingInput">Full Name</label>
-                  </div>
-                </div>
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-id-card"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control " id="floatingInput" name="CNIC" value={state.CNIC} placeholder="1234567890123" onChange={handleChange} required />
-                    <label for="floatingInput">CNIC Number (lenght should be 13)</label>
+    <Container className='createAccount'>
+      <Card>
+        <Title>Enter Account Details Below</Title>
+        <SubTitle>All fields are required*</SubTitle>
+        <form onSubmit={handleSubmit}>
+          <InputGroup>
+            <Label htmlFor="fullName">Full Name</Label>
+            <Icon className="fa fa-user" />
+            <Input type="text" name="fullName" value={state.fullName} placeholder="Enter full name" onChange={handleChange} required />
+          </InputGroup>
+          <InputGroup>
+            <Label htmlFor="CNIC">CNIC Number</Label>
+            <Icon className="fa fa-id-card" />
+            <Input type="number" name="CNIC" value={state.CNIC} placeholder="1234567890123" onChange={handleChange} required />
+          </InputGroup>
+          <InputGroup>
+            <Label htmlFor="branchCode">Branch Code</Label>
+            <Icon className="fa fa-building" />
+            <Input type="number" name="branchCode" value={state.branchCode} placeholder="1-99" onChange={handleChange} required />
+          </InputGroup>
+          <InputGroup>
+            <Label htmlFor="accountNumber">Account Number</Label>
+            <Icon className="fa fa-user" />
+            <Input type="number" name="accountNumber" value={state.accountNumber} placeholder="Account Number" onChange={handleChange} required />
+          </InputGroup>
+          <InputGroup>
+            <Label htmlFor="accountType">Account Type</Label>
+            <Icon className="fa fa-circle-info" />
+            <Select name="accountType" value={state.accountType} onChange={handleChange} required>
+              <option value="Saving">Saving</option>
+              <option value="Current">Current</option>
+            </Select>
+          </InputGroup>
+          <InputGroup>
+            <Label htmlFor="initialDeposit">Initial Deposit</Label>
+            <Icon className="fa fa-money-bill-wave" />
+            <Input type="number" name="initialDeposit" value={state.initialDeposit} placeholder="1000" onChange={handleChange} required />
+          </InputGroup>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Creating...' : 'Create Account'}
+          </Button>
+        </form>
+      </Card>
+    </Container>
+  );
+};
 
-                  </div>
-                </div>
-              </div>
-              <div className="row ">
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-building-columns"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control " id="floatingInput" name="branchCode" value={state.branchCode} placeholder="1-99" onChange={handleChange} required />
-                    <label for="floatingInput">Branch Code(1 - 99)</label>
-
-                  </div>
-                </div>
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-user"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control " id="floatingInput" name='accountNumber' value={state.accountNumber} placeholder="name@example.com" onChange={handleChange} required />
-                    <label for="floatingInput">Account Number(Length should be 9)</label>
-
-                  </div>
-                </div>
-              </div>
-              <div className="row ">
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-circle-info"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    {/* <input type="email" class="form-control mt-2"  placeholder="name@example.com" /> */}
-                    <select class="form-select form-select " id="floatingInput" name="accountType" value={state.account} aria-label=".form-select-lg example" onChange={handleChange} required>
-                      {/* <option value="Choose Account Type" selected >Choose Account Type</option> */}
-                      <option value="Saving">Saving</option>
-                      <option value="Current">Current</option>
-                      {/* <option value="3">Three</option> */}
-                    </select>
-                    <label for="floatingInput">Choose Account type</label>
-
-                  </div>
-                </div>
-                <div className='col-2 col-md-2 col-lg-1 icon'><i class="fa-solid fa-money-bill-1"></i></div>
-                <div className='col-10 col-md-10 col-lg-5'>
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control " id="floatingInput" name="initialDeposit" value={state.initialDeposit} placeholder="1-500" onChange={handleChange} required />
-                    <label for="floatingInput">Initial Deposit(Minimum 500 Rs.)</label>
-
-                  </div>
-                </div>
-              </div>
-              <div className="row text-end">
-                <div className='col'>
-                  {/* <input type='submit' className='btn btn-danger' value="Create Account" /> */}
-                  <button type='submit' disabled={isLoading} className='btn btn-success'  >
-                    {
-                      !isLoading ?
-                        "Create Account"
-                        :
-                        <div className='spinner-border spinner-border-sm'></div>
-                    }
-                  </button>
-                  {/* <input type="submit" className="login-btn bg-danger text-white" id="button" value="Add Order" /> */}
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default CreateAccounts
+export default CreateAccounts;
