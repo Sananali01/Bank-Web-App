@@ -23,7 +23,6 @@ const initialState = {
 };
 
 const Container = styled.div`
-  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -80,6 +79,10 @@ const InputGroup = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+
+  @media (max-width: 430px) {
+    flex-direction: column;
+  }
 `;
 
 const Label = styled.label`
@@ -129,7 +132,16 @@ const CreateAccounts = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    // Limit the length of input for CNIC and account number
+    if (name === "CNIC" && value.length <= 13) {
+      setState(prevState => ({ ...prevState, [name]: value }));
+    } else if (name === "accountNumber" && value.length <= 9) {
+      setState(prevState => ({ ...prevState, [name]: value }));
+    } else if (name !== "CNIC" && name !== "accountNumber") {
+      setState(prevState => ({ ...prevState, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -245,7 +257,8 @@ const CreateAccounts = () => {
           <InputGroup>
             <Label htmlFor="CNIC">CNIC Number</Label>
             <Icon className="fa fa-id-card" />
-            <Input type="number" name="CNIC" value={state.CNIC} placeholder="1234567890123" onChange={handleChange} required />
+            <Input type="text" name="CNIC" value={state.CNIC} placeholder="1234567890123" onChange={handleChange} required />
+            {state.CNIC.length > 13 && <p style={{ color: 'red' }}>CNIC cannot exceed 13 digits.</p>}
           </InputGroup>
           <InputGroup>
             <Label htmlFor="branchCode">Branch Code</Label>
@@ -255,7 +268,8 @@ const CreateAccounts = () => {
           <InputGroup>
             <Label htmlFor="accountNumber">Account Number</Label>
             <Icon className="fa fa-user" />
-            <Input type="number" name="accountNumber" value={state.accountNumber} placeholder="Account Number" onChange={handleChange} required />
+            <Input type="text" name="accountNumber" value={state.accountNumber} placeholder="Account Number" onChange={handleChange} required />
+            {state.accountNumber.length > 9 && <p style={{ color: 'red' }}>Account number cannot exceed 9 digits.</p>}
           </InputGroup>
           <InputGroup>
             <Label htmlFor="accountType">Account Type</Label>

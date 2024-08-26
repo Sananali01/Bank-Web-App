@@ -164,6 +164,7 @@ function Index() {
           <Route path="createAccounts" element={<CreateAccounts />} />
           <Route path="viewAccounts" element={<ViewAccounts />} />
           <Route path="accountDetails/:id" element={<AccountDetails />} />
+
         </Routes>
       </ContentArea>
     </>

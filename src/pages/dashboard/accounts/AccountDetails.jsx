@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from 'Config/Firebase'; // Ensure this is your correct path to Firebase config
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faIdCard, faUser, faDollarSign, faBuilding, faCalendarAlt, faClock, faPenFancy } from '@fortawesome/free-solid-svg-icons';
+import { faIdCard, faUser, faDollarSign, faBuilding, faCalendarAlt,  faPenFancy } from '@fortawesome/free-solid-svg-icons';
 
 // Styled components for layout and design
 const Container = styled.div`
@@ -134,6 +134,8 @@ const AccountDetails = () => {
         <Label>Created By:</Label>
         <Value>{account.createdBy?.email}</Value>
       </DetailItem>
+
+      
     </Container>
   );
 };

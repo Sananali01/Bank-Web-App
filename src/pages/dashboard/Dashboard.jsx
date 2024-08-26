@@ -166,6 +166,7 @@ function Dashboard() {
                 <CardTitle><i className="fa-solid fa-money-bill-1"></i> Transactions</CardTitle>
                 <hr />
                 <Button to="/dashboard/viewTransactions"><i className="fa-solid fa-eye"></i> View All Transactions</Button>
+                <Button to="/dashboard/transferMoney"><i className="fa-solid fa-arrow-right-arrow-left"></i> Transfer Money</Button>
                 <hr />
                 {isLoading
                   ? <Rings />
