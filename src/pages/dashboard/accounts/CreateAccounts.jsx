@@ -27,6 +27,8 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 `;
 
 const Card = styled.div`
@@ -34,8 +36,9 @@ const Card = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   padding: 40px;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
+  transition: all 0.3s ease;
 `;
 
 const Title = styled.h1`

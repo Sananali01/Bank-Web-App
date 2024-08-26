@@ -24,6 +24,7 @@ const Card = styled.div`
 
 const Header = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
@@ -140,10 +141,11 @@ function ViewAccounts() {
                     <Tr key={i}>
                       <Td>{doc.branchCode}</Td>
                       <Td>
-                        <Button data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                          {doc.accountNumber}
-                        </Button>
+                        <Link to={`/dashboard/accountDetails/${doc.id}`}>
+                          <Button>{doc.accountNumber}</Button>
+                        </Link>
                       </Td>
+
                       <Td>{doc.fullName}</Td>
                       <Td>{doc.date}</Td>
                       <Td>{doc.accountType}</Td>

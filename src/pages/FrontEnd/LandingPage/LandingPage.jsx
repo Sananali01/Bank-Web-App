@@ -14,7 +14,6 @@ const MainSection = styled.div`
   background-repeat: no-repeat;
   background-size: cover;
   min-height: 80vh;
-  border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -43,8 +42,8 @@ const ButtonLink = styled(Link)`
 `;
 
 const LoginButton = styled.button`
-  background-color: #ffffff;
-  color: #000;
+  background: linear-gradient(45deg, rgb(106, 17, 203) 0%, rgb(37, 117, 252) 100%);
+  color: #ffffff;
   padding: 12px 24px;
   border: none;
   border-radius: 5px;
@@ -53,7 +52,7 @@ const LoginButton = styled.button`
   font-size: 1rem;
 
   &:hover {
-    background-color: #eaeaea;
+    background: linear-gradient(45deg,  rgb(37, 117, 252) 100%,rgb(106, 17, 203) 0%,);
   }
 `;
 

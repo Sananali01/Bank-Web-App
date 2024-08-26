@@ -60,6 +60,7 @@ const Button = styled(Link)`
 
   &:hover {
     background-color: ${cardHoverColor};
+    color: ${textColor};
   }
 `;
 

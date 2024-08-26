@@ -6,6 +6,7 @@ import Dashboard from './Dashboard';
 import ViewTransactions from './viewTransactions';
 import ViewAccounts from './viewAccounts';
 import CreateAccounts from './accounts';
+import AccountDetails from './accounts/AccountDetails';
 
 // Main color variables
 const primaryColor = 'rgb(37, 117, 252)'; // Indigo
@@ -162,6 +163,7 @@ function Index() {
           <Route path="viewTransactions" element={<ViewTransactions />} />
           <Route path="createAccounts" element={<CreateAccounts />} />
           <Route path="viewAccounts" element={<ViewAccounts />} />
+          <Route path="accountDetails/:id" element={<AccountDetails />} />
         </Routes>
       </ContentArea>
     </>

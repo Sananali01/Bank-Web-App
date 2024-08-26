@@ -4,6 +4,7 @@ import { auth } from '../../Config/Firebase';
 import { signOut } from "firebase/auth";
 import { toast } from 'react-toastify';
 import { AuthenticatedContext } from '../../Context/AuthenticatedContext';
+import { BsColumnsGap } from 'react-icons/bs';
 
 function Navbar() {
     const { isAuthenticated, setIsAuthenticated } = useContext(AuthenticatedContext);
@@ -116,7 +117,7 @@ function Navbar() {
                         <Link to="/" style={{ ...linkStyle, fontWeight: 'bold', fontSize: '1.5rem' }}>GLOBAL BANK</Link>
                         <p style={taglineStyle}>Your trusted partner in finance.</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap',columnGap:"5px" }}>
                         {/* Additional Links with Hover Effects */}
                         <Link
                             to="/about"
